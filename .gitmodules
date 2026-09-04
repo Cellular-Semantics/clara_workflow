@@ -1,0 +1,3 @@
+[submodule "agentic-pipeline-testdata"]
+	path = agentic-pipeline-testdata
+	url = https://github.com/Cellular-Semantics/agentic-pipeline-testdata.git

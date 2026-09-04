@@ -32,8 +32,11 @@ Agentic replication of the CLARA ontology-term verification workflow.
 - **[clara_workflow/test_set.yaml](clara_workflow/test_set.yaml)** — 20 CL
   terms selected from the gold set as a small benchmark.
 - **[agentic-pipeline-testdata/](agentic-pipeline-testdata/)** — submodule
-  with `cells_data.json` (term metadata + references) and reference PDFs.
-  The agent reads from `cells_data.json`; PDFs are not currently used.
+  ([`Cellular-Semantics/agentic-pipeline-testdata`](https://github.com/Cellular-Semantics/agentic-pipeline-testdata),
+  **private**) with `cells_data.json` (term metadata + references) and
+  reference PDFs. The agent reads from `cells_data.json`; PDFs are not
+  currently used. Nothing else in the repo depends on it — the tests and the
+  stage-1 extractor run fine without it.
 
 ## Workflow
 
@@ -78,6 +81,10 @@ from stage-1 output in the ontology repo.
 uv venv
 uv pip install -e ".[dev]"
 ```
+
+The `agentic-pipeline-testdata` submodule is private to the Cellular Semantics
+org; if you have access, pull it with `git submodule update --init`. Skip it
+otherwise — nothing else in the repo needs it.
 
 ### Run the tests
 
@@ -141,6 +148,7 @@ fixtures/stage1/               # cached robot-diff outputs for tests
 runs/                          # example agent outputs (legacy CLARA runs)
 tests/                         # pytest unit tests
 examples/github-actions/       # draft GHA wiring (not yet active)
+agentic-pipeline-testdata/     # submodule (private): term metadata + ref PDFs
 ```
 
 ## Caveats

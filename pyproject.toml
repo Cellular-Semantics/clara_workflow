@@ -7,6 +7,10 @@ name = "clara_workflow"
 version = "0.0.1"
 description = "Agentic replication of the CLARA ontology-term verification workflow."
 requires-python = ">=3.11"
+
+[project.urls]
+Repository = "https://github.com/Cellular-Semantics/clara_workflow"
+
 dependencies = [
     "pandas>=2.0",
     "scikit-learn>=1.3",
