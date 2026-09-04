@@ -1,0 +1,5 @@
+pr=3717 (Buccal mucosa cell edits)
+base=d7ff69b907623c8a7d0904f5044fa4724233901a
+tip=51ef20015a068078888bb4c42ae5ae861c846fca
+base_source=merge-base(pull/3717/head, origin/master)
+note=tip is the head reviewed by CLARA run 33852530599

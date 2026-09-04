@@ -30,6 +30,7 @@ from clara_workflow.stage1.parse import (
     parse_diff_markdown,
     reviewable_changes,
     summarise_by_term,
+    text_deltas,
 )
 
 
@@ -109,6 +110,9 @@ def main(argv: list[str] | None = None) -> int:
         "changes": [_change_to_dict(c) for c in changes],
         "reviewable": [_change_to_dict(c) for c in reviewable],
         "decomposable": [_change_to_dict(c) for c in decomposable],
+        # Removed/added text axioms paired so a ref-only edit is distinguishable
+        # from a rewrite; consumed by the router to pick a route.
+        "text_deltas": [dataclasses.asdict(d) for d in text_deltas(changes)],
         "by_term": {
             tid: {
                 **{k: v for k, v in entry.items() if k != "changes"},

@@ -14,6 +14,8 @@ from clara_workflow.stage1.parse import (
     parse_diff_markdown,
     reviewable_changes,
     summarise_by_term,
+    text_deltas,
+    TextDelta,
 )
 
 __all__ = [
@@ -24,4 +26,6 @@ __all__ = [
     "parse_diff_markdown",
     "reviewable_changes",
     "summarise_by_term",
+    "text_deltas",
+    "TextDelta",
 ]
