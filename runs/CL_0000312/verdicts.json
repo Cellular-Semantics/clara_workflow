@@ -1,0 +1,311 @@
+{
+  "cell_id": "CL_0000312",
+  "term_id": "CL:0000312",
+  "name": "keratinocyte",
+  "run_note": "Stage B ran against Asta `snippet_search`, scoped by `paper_ids`. Stage C (`get_europepmc_full_text`) returned empty output for every identifier tried (see issue #5), so unresolved core assertions could not be escalated to full text.",
+  "targets_processed": [
+    {
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "validation_mode": "validate_new_refs_against_existing_text"
+    }
+  ],
+  "references": [
+    "PMID:21316034"
+  ],
+  "assertions": [
+    {
+      "id": "a1",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes are epithelial cells of stratified squamous tissues.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 no snippet in PMID:21316034 addresses this claim."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a2",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes are present in skin.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "pass",
+        "evidence": "In the oral cavity, mucosal keratinocytes resist bacterial infection, in part, by producing broad-spectrum antimicrobial peptides (AMPs) including defensin, adrenomedullin and calprotectin. Epidermal keratinocyte expression of many AMPs increases in response to interleukin-1\u03b1 (IL-1\u03b1). IL-1\u03b1 is produced by epidermal keratinocytes and regulates cell differentiation. To better understand innate immunity in the oral cavity, we sought to determine how IL-1\u03b1 might regulate expression of AMPs by human gingival keratinocytes (HGKs) using DNA microarray and western blot analyses. HGKs from three subjects expressed eleven AMPs, including S100A7, S100A8, S100A9, S100A12, secretory leukocyte protease inhibitor, lipocalin 2 (LCN2), cystatin C and \u03b2-defensin 2. Of the expressed AMPs, S100A7, S100A12 and LCN2 were up-regulated by IL-1\u03b1 (inducible AMPs); the other AMPs were considered to be constitutive. Human gingival keratinocytes, therefore, express constitutive and IL-1\u03b1-inducible AMPs to provide a rapid and robust innate response to microbial infection.",
+        "source": "PMID:21316034",
+        "note": "Snippet refers to epidermal keratinocytes."
+      },
+      "full_text_stage": null,
+      "final_verdict": "pass",
+      "warn_background": false
+    },
+    {
+      "id": "a3",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes are present in oral mucosa.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "pass",
+        "evidence": "In the oral cavity, mucosal keratinocytes resist bacterial infection, in part, by producing broad-spectrum antimicrobial peptides (AMPs) including defensin, adrenomedullin and calprotectin. Epidermal keratinocyte expression of many AMPs increases in response to interleukin-1\u03b1 (IL-1\u03b1). IL-1\u03b1 is produced by epidermal keratinocytes and regulates cell differentiation. To better understand innate immunity in the oral cavity, we sought to determine how IL-1\u03b1 might regulate expression of AMPs by human gingival keratinocytes (HGKs) using DNA microarray and western blot analyses. HGKs from three subjects expressed eleven AMPs, including S100A7, S100A8, S100A9, S100A12, secretory leukocyte protease inhibitor, lipocalin 2 (LCN2), cystatin C and \u03b2-defensin 2. Of the expressed AMPs, S100A7, S100A12 and LCN2 were up-regulated by IL-1\u03b1 (inducible AMPs); the other AMPs were considered to be constitutive. Human gingival keratinocytes, therefore, express constitutive and IL-1\u03b1-inducible AMPs to provide a rapid and robust innate response to microbial infection.",
+        "source": "PMID:21316034",
+        "note": null
+      },
+      "full_text_stage": null,
+      "final_verdict": "pass",
+      "warn_background": false
+    },
+    {
+      "id": "a4",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes are present in esophagus.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 no snippet in PMID:21316034 addresses this claim."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a5",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes produce keratin proteins.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 no snippet in PMID:21316034 addresses this claim."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a6",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes secrete antimicrobial peptides.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "pass",
+        "evidence": "In the oral cavity, mucosal keratinocytes resist bacterial infection, in part, by producing broad-spectrum antimicrobial peptides (AMPs) including defensin, adrenomedullin and calprotectin. Epidermal keratinocyte expression of many AMPs increases in response to interleukin-1\u03b1 (IL-1\u03b1). IL-1\u03b1 is produced by epidermal keratinocytes and regulates cell differentiation. To better understand innate immunity in the oral cavity, we sought to determine how IL-1\u03b1 might regulate expression of AMPs by human gingival keratinocytes (HGKs) using DNA microarray and western blot analyses. HGKs from three subjects expressed eleven AMPs, including S100A7, S100A8, S100A9, S100A12, secretory leukocyte protease inhibitor, lipocalin 2 (LCN2), cystatin C and \u03b2-defensin 2. Of the expressed AMPs, S100A7, S100A12 and LCN2 were up-regulated by IL-1\u03b1 (inducible AMPs); the other AMPs were considered to be constitutive. Human gingival keratinocytes, therefore, express constitutive and IL-1\u03b1-inducible AMPs to provide a rapid and robust innate response to microbial infection.",
+        "source": "PMID:21316034",
+        "note": null
+      },
+      "full_text_stage": null,
+      "final_verdict": "pass",
+      "warn_background": false
+    },
+    {
+      "id": "a7",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes form a barrier against environmental damage.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 no snippet in PMID:21316034 addresses this claim."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a8",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes form a barrier against dehydration.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 no snippet in PMID:21316034 addresses this claim."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a9",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes form a barrier against pathogens and microbial invasion.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "pass",
+        "evidence": "In the oral cavity, mucosal keratinocytes resist bacterial infection, in part, by producing broad-spectrum antimicrobial peptides (AMPs) including defensin, adrenomedullin and calprotectin. Epidermal keratinocyte expression of many AMPs increases in response to interleukin-1\u03b1 (IL-1\u03b1). IL-1\u03b1 is produced by epidermal keratinocytes and regulates cell differentiation. To better understand innate immunity in the oral cavity, we sought to determine how IL-1\u03b1 might regulate expression of AMPs by human gingival keratinocytes (HGKs) using DNA microarray and western blot analyses. HGKs from three subjects expressed eleven AMPs, including S100A7, S100A8, S100A9, S100A12, secretory leukocyte protease inhibitor, lipocalin 2 (LCN2), cystatin C and \u03b2-defensin 2. Of the expressed AMPs, S100A7, S100A12 and LCN2 were up-regulated by IL-1\u03b1 (inducible AMPs); the other AMPs were considered to be constitutive. Human gingival keratinocytes, therefore, express constitutive and IL-1\u03b1-inducible AMPs to provide a rapid and robust innate response to microbial infection.",
+        "source": "PMID:21316034",
+        "note": null
+      },
+      "full_text_stage": null,
+      "final_verdict": "pass",
+      "warn_background": false
+    },
+    {
+      "id": "a10",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes undergo successive stages of differentiation marked by changes in keratin expression.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 the snippet states IL-1a regulates cell differentiation but says nothing about keratin-marked stages."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a11",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocyte differentiation supports tissue integrity and wound repair.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "searched \u2014 no snippet in PMID:21316034 addresses this claim."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a12",
+      "target_id": "refs_added:CL:0000312:1",
+      "route": "refs_added",
+      "source_change_kind": "text_def",
+      "text": "Keratinocytes contribute to immune defense.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:21316034"
+      ],
+      "snippet_stage": {
+        "verdict": "pass",
+        "evidence": "In the oral cavity, mucosal keratinocytes resist bacterial infection, in part, by producing broad-spectrum antimicrobial peptides (AMPs) including defensin, adrenomedullin and calprotectin. Epidermal keratinocyte expression of many AMPs increases in response to interleukin-1\u03b1 (IL-1\u03b1). IL-1\u03b1 is produced by epidermal keratinocytes and regulates cell differentiation. To better understand innate immunity in the oral cavity, we sought to determine how IL-1\u03b1 might regulate expression of AMPs by human gingival keratinocytes (HGKs) using DNA microarray and western blot analyses. HGKs from three subjects expressed eleven AMPs, including S100A7, S100A8, S100A9, S100A12, secretory leukocyte protease inhibitor, lipocalin 2 (LCN2), cystatin C and \u03b2-defensin 2. Of the expressed AMPs, S100A7, S100A12 and LCN2 were up-regulated by IL-1\u03b1 (inducible AMPs); the other AMPs were considered to be constitutive. Human gingival keratinocytes, therefore, express constitutive and IL-1\u03b1-inducible AMPs to provide a rapid and robust innate response to microbial infection.",
+        "source": "PMID:21316034",
+        "note": null
+      },
+      "full_text_stage": null,
+      "final_verdict": "pass",
+      "warn_background": false
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "total_core": 12,
+    "total_background": 0,
+    "core_pass_snippet": 5,
+    "core_pass_full_text": 0,
+    "core_fail": 0,
+    "core_uncertain": 7,
+    "background_pass": 0,
+    "background_warn": 0
+  }
+}

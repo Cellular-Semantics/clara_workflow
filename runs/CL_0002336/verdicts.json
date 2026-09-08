@@ -1,0 +1,127 @@
+{
+  "cell_id": "CL_0002336",
+  "term_id": "CL:0002336",
+  "name": "buccal mucosa cell",
+  "run_note": "Stage B ran against Asta `snippet_search`, scoped by `paper_ids`. Stage C (`get_europepmc_full_text`) returned empty output for every identifier tried (see issue #5), so unresolved core assertions could not be escalated to full text.",
+  "targets_processed": [
+    {
+      "target_id": "text_revision:CL:0002336:1",
+      "route": "text_revision",
+      "validation_mode": "decompose_revised_text"
+    },
+    {
+      "target_id": "text_revision:CL:0002336:2",
+      "route": "text_revision",
+      "validation_mode": "decompose_revised_text"
+    },
+    {
+      "target_id": "relationship:CL:0002336:1",
+      "route": "relationship",
+      "validation_mode": "validate_equivalent_class_axiom"
+    }
+  ],
+  "references": [],
+  "assertions": [
+    {
+      "id": "a1",
+      "target_id": "text_revision:CL:0002336:1",
+      "route": "text_revision",
+      "source_change_kind": "text_def",
+      "text": "Buccal mucosa cells are epithelial cells.",
+      "category": "core",
+      "refs_in_scope": [],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "uncited \u2014 this definition carries no searchable reference (only `GOC:tfm` and `MESH:D009061`). No search was possible."
+      },
+      "full_text_stage": null,
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a2",
+      "target_id": "text_revision:CL:0002336:1",
+      "route": "text_revision",
+      "source_change_kind": "text_def",
+      "text": "Buccal mucosa cells line the oral cavity, including the mucosa of the gums, palate, lip and cheek.",
+      "category": "core",
+      "refs_in_scope": [],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "uncited \u2014 this definition carries no searchable reference (only `GOC:tfm` and `MESH:D009061`). No search was possible."
+      },
+      "full_text_stage": null,
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a3",
+      "target_id": "text_revision:CL:0002336:2",
+      "route": "text_revision",
+      "source_change_kind": "comment",
+      "text": "The term 'buccal mucosa cell' is sometimes used only for the lining of the cheeks, as part of the lining mucosa.",
+      "category": "background",
+      "refs_in_scope": [],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "uncited \u2014 the comment's only xref is a scielo URL, which is not a `PMID:`/`DOI:` id the search tools accept."
+      },
+      "full_text_stage": null,
+      "final_verdict": "uncertain",
+      "warn_background": true
+    },
+    {
+      "id": "a4",
+      "target_id": "relationship:CL:0002336:1",
+      "route": "relationship",
+      "source_change_kind": "equivalent_class",
+      "text": "NECESSARY: Every buccal mucosa cell is a keratinocyte that is part of the mouth mucosa.",
+      "category": "core",
+      "refs_in_scope": [],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "uncited \u2014 the definition this axiom formalises carries no searchable reference (only `GOC:tfm`, a curator attribution, and `MESH:D009061`, the MeSH descriptor \"Mouth Mucosa\"). No search was possible."
+      },
+      "full_text_stage": null,
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a5",
+      "target_id": "relationship:CL:0002336:1",
+      "route": "relationship",
+      "source_change_kind": "equivalent_class",
+      "text": "SUFFICIENT: Every keratinocyte that is part of the mouth mucosa is a buccal mucosa cell.",
+      "category": "core",
+      "refs_in_scope": [],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "uncited \u2014 the definition this axiom formalises carries no searchable reference (only `GOC:tfm`, a curator attribution, and `MESH:D009061`, the MeSH descriptor \"Mouth Mucosa\"). No search was possible."
+      },
+      "full_text_stage": null,
+      "final_verdict": "uncertain",
+      "warn_background": false
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "total_core": 4,
+    "total_background": 1,
+    "core_pass_snippet": 0,
+    "core_pass_full_text": 0,
+    "core_fail": 0,
+    "core_uncertain": 4,
+    "background_pass": 0,
+    "background_warn": 1
+  }
+}
