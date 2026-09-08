@@ -210,6 +210,11 @@ Reference selection rules:
   `term_level_candidate_refs`.
 - For `relationship` targets, prefer `candidate_refs`; if empty, fall back to
   `term_level_candidate_refs`.
+- For `equivalent_class` changes, the refs are the **text definition's** refs.
+  A logical axiom carries no dbxrefs of its own, so the producer fills
+  `candidate_refs` from the definition — the logical definition formalises the
+  prose, so the prose's evidence is what has to support it. Treat an empty list
+  here as "the definition itself is uncited", not as a routing error.
 - For `synonym` targets, use `candidate_refs`.
 - For `text_revision` targets, use `candidate_refs`; if empty, fall back to
   `term_level_candidate_refs`.

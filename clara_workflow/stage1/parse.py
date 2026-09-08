@@ -428,3 +428,36 @@ def text_deltas(changes: list[Change]) -> list[TextDelta]:
         out.extend(_delta(kind, None, r) for r in removed)
 
     return out
+
+# --- head-state definition refs -------------------------------------------
+
+# One axiom per line in ROBOT's functional syntax, so a definition's dbxrefs are
+# whatever `hasDbXref` annotations sit to the left of the IAO_0000115 predicate.
+_DEF_PREDICATE_RE = re.compile(r"obo:IAO_0000115 obo:([A-Za-z]+_\d+)")
+_XREF_VALUE_RE = re.compile(r'oboInOwl:hasDbXref "([^"]+)"')
+
+
+def definition_refs(owl_text: str) -> dict[str, list[str]]:
+    """Map term CURIE -> refs on that term's definition, from an edit file.
+
+    `robot diff` only reports axioms that changed, so a PR that adds a logical
+    definition to an untouched term carries no definition axiom at all. The
+    references that justify a logical definition are the ones on the text
+    definition it formalises, which means reading them out of the head state
+    rather than the diff.
+
+    Parsed line-wise on purpose: a nested-paren regex misses definitions whose
+    dbxref values contain brackets (e.g. Wikipedia URLs with parenthesised
+    disambiguators).
+    """
+    out: dict[str, list[str]] = {}
+    for line in owl_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("AnnotationAssertion("):
+            continue
+        match = _DEF_PREDICATE_RE.search(stripped)
+        if match is None:
+            continue
+        term_id = match.group(1).replace("_", ":", 1)
+        out[term_id] = _XREF_VALUE_RE.findall(stripped[: match.start()])
+    return out

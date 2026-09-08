@@ -17,6 +17,7 @@ from clara_workflow.stage1 import (
     decomposable_changes,
     parse_diff_markdown,
     reviewable_changes,
+    definition_refs,
     summarise_by_term,
     text_deltas,
 )
@@ -247,3 +248,51 @@ def test_text_deltas_cover_every_reviewable_text_change():
 def test_text_deltas_exclude_obsoleted_terms():
     deltas = text_deltas(parse_diff_markdown(_load("2471-juxtaglomerular-complex-cells-merge")))
     assert all(d.term_id != "CL:1000618" for d in deltas)
+
+
+# --- definition_refs: head-state refs for logical definitions --------------
+
+_EDIT_FILE_SAMPLE = """Prefix(obo:=<http://purl.obolibrary.org/obo/>)
+
+# Class: obo:CL_0002336 (buccal mucosa cell)
+
+AnnotationAssertion(Annotation(oboInOwl:hasDbXref "GOC:tfm") Annotation(oboInOwl:hasDbXref "MESH:D009061") obo:IAO_0000115 obo:CL_0002336 "An epithelial cell that lines the oral cavity.")
+AnnotationAssertion(rdfs:label obo:CL_0002336 "buccal mucosa cell")
+EquivalentClasses(obo:CL_0002336 ObjectIntersectionOf(obo:CL_0000312 ObjectSomeValuesFrom(obo:BFO_0000050 obo:UBERON_0003729)))
+
+# Class: obo:CL_0000037 (hematopoietic stem cell)
+
+AnnotationAssertion(Annotation(oboInOwl:hasDbXref "GOC:tfm") Annotation(oboInOwl:hasDbXref "PMID:19022770") Annotation(oboInOwl:hasDbXref "http://en.wikipedia.org/wiki/Hematopoietic_stem_cell_(HSC)") obo:IAO_0000115 obo:CL_0000037 "A stem cell.")
+
+# Class: obo:CL_9999999 (undefined cell)
+
+AnnotationAssertion(rdfs:label obo:CL_9999999 "undefined cell")
+"""
+
+
+def test_definition_refs_reads_dbxrefs_off_the_definition():
+    refs = definition_refs(_EDIT_FILE_SAMPLE)
+    assert refs["CL:0002336"] == ["GOC:tfm", "MESH:D009061"]
+
+
+def test_definition_refs_survives_parens_in_a_xref_value():
+    """A bracketed Wikipedia disambiguator must not truncate the ref list."""
+    refs = definition_refs(_EDIT_FILE_SAMPLE)
+    assert refs["CL:0000037"] == [
+        "GOC:tfm",
+        "PMID:19022770",
+        "http://en.wikipedia.org/wiki/Hematopoietic_stem_cell_(HSC)",
+    ]
+
+
+def test_definition_refs_omits_terms_without_a_definition():
+    refs = definition_refs(_EDIT_FILE_SAMPLE)
+    assert "CL:9999999" not in refs
+
+
+def test_definition_refs_ignores_labels_and_logical_axioms():
+    """Only IAO:0000115 assertions count; a label or EquivalentClasses must not."""
+    refs = definition_refs(_EDIT_FILE_SAMPLE)
+    assert set(refs) == {"CL:0002336", "CL:0000037"}
+    # the xrefs must come from the definition axiom, not from any other line
+    assert all("rdfs:label" not in r for rs in refs.values() for r in rs)

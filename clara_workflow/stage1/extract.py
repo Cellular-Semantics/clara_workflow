@@ -27,6 +27,7 @@ from pathlib import Path
 from clara_workflow.stage1.parse import (
     Change,
     decomposable_changes,
+    definition_refs,
     parse_diff_markdown,
     reviewable_changes,
     summarise_by_term,
@@ -68,8 +69,13 @@ def extract(
     right_ref: str,
     edit_file: str,
     robot: str = "robot",
-) -> list[Change]:
-    """Resolve two refs against `edit_file`, run robot diff, parse, return changes."""
+) -> tuple[list[Change], dict[str, list[str]]]:
+    """Resolve two refs against `edit_file`, run robot diff, parse.
+
+    Returns the parsed changes plus the head-state definition refs per term,
+    which is where a logical definition's justification lives when the text
+    definition itself wasn't touched by the PR.
+    """
     with tempfile.TemporaryDirectory() as td:
         tdp = Path(td)
         left = tdp / "left.owl"
@@ -78,7 +84,10 @@ def extract(
         _git_show(repo, left_ref, edit_file, left)
         _git_show(repo, right_ref, edit_file, right)
         _robot_diff(left, right, diff_md, robot=robot)
-        return parse_diff_markdown(diff_md.read_text())
+        return (
+            parse_diff_markdown(diff_md.read_text()),
+            definition_refs(right.read_text()),
+        )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -95,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"robot executable not found: {args.robot}", file=sys.stderr)
         return 2
 
-    changes = extract(
+    changes, head_definition_refs = extract(
         repo=args.repo,
         left_ref=args.left,
         right_ref=args.right,
@@ -117,6 +126,9 @@ def main(argv: list[str] | None = None) -> int:
             tid: {
                 **{k: v for k, v in entry.items() if k != "changes"},
                 "changes": [_change_to_dict(c) for c in entry["changes"]],
+                # Refs on the term's definition as it stands at the head ref —
+                # present whether or not this PR touched the definition.
+                "definition_refs": head_definition_refs.get(tid, []),
             }
             for tid, entry in summarise_by_term(changes).items()
         },

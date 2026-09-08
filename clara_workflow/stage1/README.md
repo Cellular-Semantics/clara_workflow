@@ -37,6 +37,12 @@ Any of the following, on either side (`added` or `removed`):
 Each of these carries its own `hasDbXref` list in the parser output; stage 2/3
 check that list when deciding whether the change is justified.
 
+`definition_refs()` reads each term's definition dbxrefs out of the **head** edit
+file rather than the diff, because `robot diff` reports only changed axioms: a PR
+that adds a logical definition to an untouched term carries no definition axiom,
+yet the text definition it formalises is what justifies it. These land in
+`by_term[*].definition_refs`.
+
 `equivalent_class` changes carry the axiom itself in `value`, as bare Manchester
 syntax (`buccal mucosa cell EquivalentTo keratinocyte and (part of some mouth
 mucosa)`). ROBOT's markdown diff already emits Manchester syntax; the parser just
