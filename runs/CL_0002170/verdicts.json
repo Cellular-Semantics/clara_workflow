@@ -1,0 +1,107 @@
+{
+  "cell_id": "CL_0002170",
+  "term_id": "CL:0002170",
+  "name": "keratinized cell of the oral mucosa",
+  "run_note": "Stage B ran against Asta `snippet_search`, scoped by `paper_ids`. Stage C (`get_europepmc_full_text`) returned empty output for every identifier tried (see issue #5), so unresolved core assertions could not be escalated to full text.",
+  "targets_processed": [
+    {
+      "target_id": "text_revision:CL:0002170:1",
+      "route": "text_revision",
+      "validation_mode": "decompose_revised_text"
+    }
+  ],
+  "references": [
+    "PMID:12014572"
+  ],
+  "assertions": [
+    {
+      "id": "a1",
+      "target_id": "text_revision:CL:0002170:1",
+      "route": "text_revision",
+      "source_change_kind": "text_def",
+      "text": "A keratinized cell of the oral mucosa is a keratinized buccal mucosa cell.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:12014572"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "not retrievable \u2014 `snippet_search` returned 0 hits because PMID:12014572 is absent from the Asta corpus, and the paper is `inEPMC=N` so Stage C cannot reach it either. The reference was in scope but could not be read."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a2",
+      "target_id": "text_revision:CL:0002170:1",
+      "route": "text_revision",
+      "source_change_kind": "text_def",
+      "text": "Keratinized cells of the oral mucosa are mostly located in the hard palate.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:12014572"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "not retrievable \u2014 `snippet_search` returned 0 hits because PMID:12014572 is absent from the Asta corpus, and the paper is `inEPMC=N` so Stage C cannot reach it either. The reference was in scope but could not be read."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    },
+    {
+      "id": "a3",
+      "target_id": "text_revision:CL:0002170:1",
+      "route": "text_revision",
+      "source_change_kind": "text_def",
+      "text": "Keratinized cells of the oral mucosa are mostly located in the gingiva.",
+      "category": "core",
+      "refs_in_scope": [
+        "PMID:12014572"
+      ],
+      "snippet_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "note": "not retrievable \u2014 `snippet_search` returned 0 hits because PMID:12014572 is absent from the Asta corpus, and the paper is `inEPMC=N` so Stage C cannot reach it either. The reference was in scope but could not be read."
+      },
+      "full_text_stage": {
+        "verdict": "uncertain",
+        "evidence": null,
+        "source": null,
+        "full_text_available": false,
+        "note": "get_europepmc_full_text returned empty output for this identifier."
+      },
+      "final_verdict": "uncertain",
+      "warn_background": false
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "total_core": 3,
+    "total_background": 0,
+    "core_pass_snippet": 0,
+    "core_pass_full_text": 0,
+    "core_fail": 0,
+    "core_uncertain": 3,
+    "background_pass": 0,
+    "background_warn": 0
+  }
+}

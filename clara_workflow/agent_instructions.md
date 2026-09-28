@@ -41,6 +41,9 @@ Normalise ids as follows:
 The routing payload contains `targets`. Each target has one of these routes:
 
 - `ntr` — new term bundle; contains decomposable text plus structural context
+- `text_revision` — revised prose on an existing term; decomposable
+- `refs_added` — prose on an existing term that did **not** change, with one or
+  more references newly attached to it
 - `relationship` — a single atomic structural axiom to check
 - `synonym` — a single atomic synonym axiom to check
 
@@ -56,6 +59,8 @@ Relevant target fields:
 - `term_level_candidate_refs`
 - for `ntr`: `textual_changes` (legacy alias `definition_changes`) and
   `relationship_changes`
+- for `text_revision`: `textual_changes`, plus `prior_value` on each change
+- for `refs_added`: `textual_changes` and `refs_added`
 - for `relationship` / `synonym`: `change`
 
 ### Contract rules
@@ -108,6 +113,32 @@ For `ntr` targets:
 4. Also take each `added` change from `relationship_changes` and convert it
    into one atomic `core` assertion.
 
+### Route: `text_revision`
+
+The prose changed on an existing term. Treat it like the textual half of an
+`ntr` target:
+
+1. Decompose the `added` change's `value` into atomic assertions.
+2. Tag each `core` or `background` as above.
+
+`prior_value` is the previous wording, provided as context only. Do not verify
+it, and do not report assertions that are unchanged between the two wordings as
+new claims — the reviewable content is the current `value`.
+
+### Route: `refs_added`
+
+The prose did **not** change; a reference was attached to it. The claim under
+review is that the *newly added* reference supports the existing text.
+
+1. Decompose the `value` into atomic assertions as usual.
+2. Verify them **only** against `refs_added` — not the full ref list on the
+   axiom. The pre-existing refs were justified when they were added.
+3. If every assertion is `uncertain` against the new refs, that is a real
+   result: the added reference does not visibly support the definition. Say so
+   in the report rather than falling back to the older refs.
+
+Do not re-verify the definition against its whole reference set on this route.
+
 ### Route: `relationship`
 
 For `relationship` targets:
@@ -144,14 +175,28 @@ Examples:
 - `synonym_related`:
   - "`{value}` is a related synonym of `{term_label}`."
 
-For `equivalent_class` routed as a structural target:
+For `equivalent_class` routed as a structural target, `value` carries the bare
+axiom in Manchester syntax, e.g.
 
-- If the routed change does not expose enough semantics to verbalise the
-  logical definition faithfully, create one `core` assertion noting that the
-  equivalent-class axiom for the term requires support.
-- If you cannot verify it from the exposed routing data, it is acceptable to
-  leave that assertion `uncertain` with a note explaining that the routed
-  payload does not provide enough structure for faithful verbalisation.
+```text
+buccal mucosa cell EquivalentTo keratinocyte and (part of some mouth mucosa)
+```
+
+`EquivalentTo` states necessary **and sufficient** conditions, so it makes two
+claims. Emit **both** as separate `core` assertions:
+
+- necessary — "Every `{term_label}` is a `{genus}` that `{differentia}`."
+- sufficient — "Every `{genus}` that `{differentia}` is a `{term_label}`."
+
+The sufficient direction is the one editors get wrong and the one literature
+rarely states outright. Do not mark it `pass` on evidence that only supports
+the necessary direction, and do not collapse the two into a single assertion.
+If the axiom nests operators too deeply to verbalise faithfully, verbalise what
+you can and note the residue — do not silently drop a conjunct.
+
+Only if `value` is absent or empty may you fall back to a single `core`
+assertion noting that the equivalent-class axiom requires support, left
+`uncertain` with a note that the payload exposed no axiom text.
 
 ## Reference scope per assertion
 
@@ -165,7 +210,16 @@ Reference selection rules:
   `term_level_candidate_refs`.
 - For `relationship` targets, prefer `candidate_refs`; if empty, fall back to
   `term_level_candidate_refs`.
+- For `equivalent_class` changes, the refs are the **text definition's** refs.
+  A logical axiom carries no dbxrefs of its own, so the producer fills
+  `candidate_refs` from the definition — the logical definition formalises the
+  prose, so the prose's evidence is what has to support it. Treat an empty list
+  here as "the definition itself is uncited", not as a routing error.
 - For `synonym` targets, use `candidate_refs`.
+- For `text_revision` targets, use `candidate_refs`; if empty, fall back to
+  `term_level_candidate_refs`.
+- For `refs_added` targets, use `refs_added` only. Never widen to the axiom's
+  pre-existing refs.
 - Assume these ref lists were prefiltered upstream; only normalize case and
   slash formatting needed by the search tools.
 

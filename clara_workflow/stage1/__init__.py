@@ -11,9 +11,12 @@ from clara_workflow.stage1.parse import (
     CONTENT_KINDS,
     DECOMPOSABLE_KINDS,
     decomposable_changes,
+    definition_refs,
     parse_diff_markdown,
     reviewable_changes,
     summarise_by_term,
+    text_deltas,
+    TextDelta,
 )
 
 __all__ = [
@@ -21,7 +24,10 @@ __all__ = [
     "CONTENT_KINDS",
     "DECOMPOSABLE_KINDS",
     "decomposable_changes",
+    "definition_refs",
     "parse_diff_markdown",
     "reviewable_changes",
     "summarise_by_term",
+    "text_deltas",
+    "TextDelta",
 ]

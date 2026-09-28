@@ -37,6 +37,38 @@ Any of the following, on either side (`added` or `removed`):
 Each of these carries its own `hasDbXref` list in the parser output; stage 2/3
 check that list when deciding whether the change is justified.
 
+`definition_refs()` reads each term's definition dbxrefs out of the **head** edit
+file rather than the diff, because `robot diff` reports only changed axioms: a PR
+that adds a logical definition to an untouched term carries no definition axiom,
+yet the text definition it formalises is what justifies it. These land in
+`by_term[*].definition_refs`.
+
+`equivalent_class` changes carry the axiom itself in `value`, as bare Manchester
+syntax (`buccal mucosa cell EquivalentTo keratinocyte and (part of some mouth
+mucosa)`). ROBOT's markdown diff already emits Manchester syntax; the parser just
+strips the markdown links off the labels.
+
+## Paired text changes (`text_deltas()`)
+
+ROBOT reports an annotated axiom as an independent `Removed` + `Added` bullet,
+and an OWL axiom's identity includes its annotations. So attaching one dbxref to
+an untouched definition is indistinguishable from a rewrite unless the two sides
+are paired and their values compared.
+
+`text_deltas()` does that pairing for `text_def` / `comment`, giving each a
+status:
+
+| `status`    | Meaning | What stages 2/3 should check |
+|-------------|---------|---|
+| `revised`   | The prose changed. | The new prose, against the axiom's refs. |
+| `refs_only` | The prose is byte-identical; only refs changed. | The existing prose, against `refs_added` **only**. |
+| `added`     | No matching removed side. | The prose, as a new claim. |
+| `removed`   | No matching added side. | Nothing — removals aren't justified by refs. |
+
+Without this split, a ref-only edit re-verifies an unchanged definition against
+its entire reference list, and the actual claim — "this newly added paper
+supports the existing definition" — never gets asked.
+
 ## Not reviewed (kept in output for traceability, but skipped by `reviewable_changes()`)
 
 | `kind`               | Why ignored |

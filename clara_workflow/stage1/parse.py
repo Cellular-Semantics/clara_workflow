@@ -120,6 +120,18 @@ def _iter_links(s: str) -> Iterator[tuple[str, str]]:
         yield m.group("text"), m.group("url")
 
 
+def _bare_axiom(body: str) -> str:
+    """Reduce a diff bullet to a bare Manchester-syntax axiom.
+
+    `robot diff --format markdown --labels true` already emits class expressions
+    in Manchester syntax; the labels just arrive wrapped in markdown links.
+    Dropping the links leaves the axiom as an editor would write it, e.g.
+
+        buccal mucosa cell EquivalentTo keratinocyte and (part of some mouth mucosa)
+    """
+    return re.sub(r"\s+", " ", _LINK_RE.sub(lambda m: m.group("text"), body)).strip()
+
+
 def _parse_bullet(line: str, term_id: str, term_label: str, side: str) -> Change:
     """Parse one top-level `- ...` bullet into a Change.
 
@@ -165,9 +177,11 @@ def _parse_bullet(line: str, term_id: str, term_label: str, side: str) -> Change
 
     # EquivalentClasses.
     if " EquivalentClasses " in body or "EquivalentTo" in body:
+        # The logical definition is the claim to verify, so carry the axiom
+        # itself rather than dropping it (issue #2).
         return Change(
             term_id=term_id, term_label=term_label, side=side,
-            kind="equivalent_class", raw=raw,
+            kind="equivalent_class", value=_bare_axiom(body), raw=raw,
         )
 
     # Annotation-style: [subj] [pred](IRI) <value>
@@ -326,3 +340,124 @@ def decomposable_changes(changes: list[Change]) -> list[Change]:
     without an intermediate decomposition step.
     """
     return [c for c in reviewable_changes(changes) if c.kind in DECOMPOSABLE_KINDS]
+
+
+# --- text change pairing ---------------------------------------------------
+
+@dataclass
+class TextDelta:
+    """One decomposable text axiom, paired across the removed/added sides.
+
+    `robot diff` reports an annotated axiom as an independent removed + added
+    bullet, and an OWL axiom's identity includes its annotations. So adding a
+    dbxref to an untouched definition looks exactly like a definition rewrite
+    unless the two sides are paired and their values compared.
+
+    status:
+      revised    — the prose changed (verify the new prose)
+      refs_only  — the prose is byte-identical; only the refs changed (verify
+                   the existing prose against `refs_added`, nothing else)
+      added      — no matching removed side (new axiom on an existing term)
+      removed    — no matching added side (axiom deleted)
+    """
+    term_id: str
+    term_label: str
+    kind: str                        # text_def | comment
+    status: str                      # revised | refs_only | added | removed
+    value: str | None = None         # the added (current) prose
+    prior_value: str | None = None   # the removed (previous) prose
+    refs: list[str] = field(default_factory=list)          # refs on the added side
+    refs_added: list[str] = field(default_factory=list)
+    refs_removed: list[str] = field(default_factory=list)
+
+
+def text_deltas(changes: list[Change]) -> list[TextDelta]:
+    """Pair removed/added decomposable text axioms per (term, kind).
+
+    Obsoleted terms and non-content kinds are excluded, matching
+    `reviewable_changes`.
+    """
+    grouped: dict[tuple[str, str], dict[str, list[Change]]] = {}
+    for c in reviewable_changes(changes):
+        if c.kind not in DECOMPOSABLE_KINDS:
+            continue
+        sides = grouped.setdefault((c.term_id, c.kind), {"added": [], "removed": []})
+        sides[c.side].append(c)
+
+    def _delta(kind: str, added: Change | None, removed: Change | None) -> TextDelta:
+        src = added or removed
+        assert src is not None
+        if added is not None and removed is not None:
+            status = "refs_only" if added.value == removed.value else "revised"
+        else:
+            status = "added" if added is not None else "removed"
+        before = set(removed.refs) if removed is not None else set()
+        after = set(added.refs) if added is not None else set()
+        return TextDelta(
+            term_id=src.term_id,
+            term_label=src.term_label,
+            kind=kind,
+            status=status,
+            value=added.value if added is not None else None,
+            prior_value=removed.value if removed is not None else None,
+            refs=list(added.refs) if added is not None else [],
+            refs_added=sorted(after - before),
+            refs_removed=sorted(before - after),
+        )
+
+    out: list[TextDelta] = []
+    for (_term_id, kind), sides in grouped.items():
+        added = list(sides["added"])
+        removed = list(sides["removed"])
+
+        # Pair identical prose first — those are ref-only edits, and matching
+        # them by value keeps a genuine rewrite from stealing the partner.
+        for a in list(added):
+            match = next((r for r in removed if r.value == a.value), None)
+            if match is not None:
+                added.remove(a)
+                removed.remove(match)
+                out.append(_delta(kind, a, match))
+
+        # Then pair what's left positionally; a term rarely carries more than
+        # one definition, so this only matters for multi-comment edits.
+        while added and removed:
+            out.append(_delta(kind, added.pop(0), removed.pop(0)))
+
+        out.extend(_delta(kind, a, None) for a in added)
+        out.extend(_delta(kind, None, r) for r in removed)
+
+    return out
+
+# --- head-state definition refs -------------------------------------------
+
+# One axiom per line in ROBOT's functional syntax, so a definition's dbxrefs are
+# whatever `hasDbXref` annotations sit to the left of the IAO_0000115 predicate.
+_DEF_PREDICATE_RE = re.compile(r"obo:IAO_0000115 obo:([A-Za-z]+_\d+)")
+_XREF_VALUE_RE = re.compile(r'oboInOwl:hasDbXref "([^"]+)"')
+
+
+def definition_refs(owl_text: str) -> dict[str, list[str]]:
+    """Map term CURIE -> refs on that term's definition, from an edit file.
+
+    `robot diff` only reports axioms that changed, so a PR that adds a logical
+    definition to an untouched term carries no definition axiom at all. The
+    references that justify a logical definition are the ones on the text
+    definition it formalises, which means reading them out of the head state
+    rather than the diff.
+
+    Parsed line-wise on purpose: a nested-paren regex misses definitions whose
+    dbxref values contain brackets (e.g. Wikipedia URLs with parenthesised
+    disambiguators).
+    """
+    out: dict[str, list[str]] = {}
+    for line in owl_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("AnnotationAssertion("):
+            continue
+        match = _DEF_PREDICATE_RE.search(stripped)
+        if match is None:
+            continue
+        term_id = match.group(1).replace("_", ":", 1)
+        out[term_id] = _XREF_VALUE_RE.findall(stripped[: match.start()])
+    return out
