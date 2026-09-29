@@ -43,18 +43,53 @@ def _git_show(repo: Path, ref: str, path: str, out: Path) -> None:
         )
 
 
-def _robot_diff(left: Path, right: Path, out: Path, robot: str = "robot") -> None:
-    subprocess.run(
-        [
-            robot, "diff",
-            "--left", str(left),
-            "--right", str(right),
-            "--format", "markdown",
-            "--labels", "true",
-            "--output", str(out),
-        ],
-        check=True,
-    )
+def _robot_diff(
+    left: Path,
+    right: Path,
+    out: Path,
+    catalog: Path | None = None,
+    robot: str = "robot",
+) -> None:
+    cmd = [robot, "diff", "--left", str(left)]
+    if catalog is not None:
+        cmd += ["--left-catalog", str(catalog)]
+    cmd += ["--right", str(right)]
+    if catalog is not None:
+        cmd += ["--right-catalog", str(catalog)]
+    cmd += ["--format", "markdown", "--labels", "true", "--output", str(out)]
+    subprocess.run(cmd, check=True)
+
+
+# `definition_refs()` scans for the compact `obo:`/`oboInOwl:` curie form (it
+# has to — that's what real edit files use), so a conversion must declare the
+# same prefixes ROBOT doesn't add by default.
+_OFN_PREFIXES = (
+    "obo: http://purl.obolibrary.org/obo/",
+    "oboInOwl: http://www.geneontology.org/formats/oboInOwl#",
+)
+
+
+def _robot_convert_to_ofn(
+    input_path: Path,
+    output_path: Path,
+    catalog: Path | None = None,
+    robot: str = "robot",
+) -> None:
+    """Convert `input_path` to OWL functional syntax, in the curie form
+    `definition_refs()` expects, regardless of the input's own format.
+
+    This is what lets `definition_refs()` work against an OBO edit file: it
+    only understands functional-syntax `AnnotationAssertion(...)` lines, so
+    non-OWL edit files (e.g. `uberon-edit.obo`) need converting first.
+    """
+    cmd = [robot, "convert", "-i", str(input_path)]
+    if catalog is not None:
+        cmd += ["--catalog", str(catalog)]
+    cmd += ["-f", "ofn"]
+    for prefix in _OFN_PREFIXES:
+        cmd += ["--add-prefix", prefix]
+    cmd += ["-o", str(output_path)]
+    subprocess.run(cmd, check=True)
 
 
 def _change_to_dict(c: Change) -> dict:
@@ -68,9 +103,22 @@ def extract(
     left_ref: str,
     right_ref: str,
     edit_file: str,
+    catalog: Path | None = None,
     robot: str = "robot",
 ) -> tuple[list[Change], dict[str, list[str]]]:
     """Resolve two refs against `edit_file`, run robot diff, parse.
+
+    `catalog` is an ODK-style `catalog-v001.xml` (same file used for both
+    refs, since the import graph practically never changes within a single
+    reviewed PR): it lets ROBOT resolve every `owl:imports` from the locally
+    committed files it maps to, rather than fetching each one over the
+    network. That's what makes this work at all for an edit file whose
+    imports include a moved/broken PURL, and it also preserves label
+    resolution for any entity defined only in an import (e.g. BFO's
+    `part of`, or a cross-referenced UBERON/CL class) -- label text that
+    `--labels true` can't produce if those imports go unresolved. The caller
+    (the GitHub Action) is expected to pass the repo's own catalog file;
+    `robot` falls back to its normal (network) import resolution if omitted.
 
     Returns the parsed changes plus the head-state definition refs per term,
     which is where a logical definition's justification lives when the text
@@ -80,13 +128,17 @@ def extract(
         tdp = Path(td)
         left = tdp / "left.owl"
         right = tdp / "right.owl"
+        right_ofn = tdp / "right.ofn"
         diff_md = tdp / "diff.md"
         _git_show(repo, left_ref, edit_file, left)
         _git_show(repo, right_ref, edit_file, right)
-        _robot_diff(left, right, diff_md, robot=robot)
+        _robot_diff(left, right, diff_md, catalog=catalog, robot=robot)
+        # Read definition refs off a functional-syntax conversion rather than
+        # the right file directly, so this also works for non-OWL edit files.
+        _robot_convert_to_ofn(right, right_ofn, catalog=catalog, robot=robot)
         return (
             parse_diff_markdown(diff_md.read_text()),
-            definition_refs(right.read_text()),
+            definition_refs(right_ofn.read_text()),
         )
 
 
@@ -96,6 +148,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--left", required=True, help="base git ref")
     p.add_argument("--right", required=True, help="head git ref")
     p.add_argument("--edit-file", default="src/ontology/cl-edit.owl")
+    p.add_argument(
+        "--catalog",
+        type=Path,
+        default=None,
+        help=(
+            "ODK-style catalog-v001.xml, used for both refs, so ROBOT resolves "
+            "owl:imports from the locally-committed files it maps to instead of "
+            "the network. Omit to fall back to ROBOT's normal import resolution."
+        ),
+    )
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--robot", default=os.environ.get("ROBOT", "robot"))
     args = p.parse_args(argv)
@@ -109,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
         left_ref=args.left,
         right_ref=args.right,
         edit_file=args.edit_file,
+        catalog=args.catalog,
         robot=args.robot,
     )
     reviewable = reviewable_changes(changes)

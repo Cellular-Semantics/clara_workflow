@@ -17,7 +17,8 @@ Two invocation modes are supported.
 ```
 
 Treat the argument after `verify` as the requested term id. Accept either
-`CL_4033094` or `CL:4033094`.
+`CL_4033094` or `CL:4033094`, but normalise it to the CURIE form (`term_id`,
+e.g. `CL:4033094`) for everything that follows, including output paths.
 
 ### CI / batch
 
@@ -33,10 +34,10 @@ JSON file from the repository root.
 Treat this routed payload as the stable consumer contract for PR-triggered
 CLARA review.
 
-Normalise ids as follows:
-
-- underscore form (`CL_4033094`) is the runtime `cell_id`
-- CURIE form (`CL:4033094`) is the routing payload `term_id`
+Every id downstream of the routing payload is the CURIE form (`term_id`, e.g.
+`CL:4033094`), including output paths (`runs/{term_id}/...`). A colon is a
+valid POSIX filename character, so this needs no further encoding on the
+runner.
 
 The routing payload contains `targets`. Each target has one of these routes:
 
@@ -93,7 +94,7 @@ Relevant target fields:
 - Group all targets by `term_id`.
 - Process each term group independently.
 
-For every processed term, write one output bundle under `runs/{cell_id}/`.
+For every processed term, write one output bundle under `runs/{term_id}/`.
 
 ## Assertion preparation
 
@@ -257,7 +258,7 @@ For each assertion that has searchable refs in scope:
      Asta ids (`PMID:12345`, `DOI:10.xxxx/yyy` — uppercase the prefix, strip
      any leading slash on `doi:/...`)
    - `limit`: 10 is usually enough
-3. Log the call by appending one JSON line to `runs/{cell_id}/tool_calls.jsonl`.
+3. Log the call by appending one JSON line to `runs/{term_id}/tool_calls.jsonl`.
    Include at least:
 
    ```json
@@ -279,7 +280,7 @@ Trigger only for `core` assertions still `fail` or `uncertain` after Stage B.
 Group unresolved `core` assertions by reference paper. For each paper:
 
 1. Call `mcp__artl-mcp__get_europepmc_full_text`.
-2. Log the call to `runs/{cell_id}/tool_calls.jsonl`:
+2. Log the call to `runs/{term_id}/tool_calls.jsonl`:
 
    ```json
    {"tool":"get_full_text","target_id":"...","identifier":"PMID:...","available":true}
@@ -293,17 +294,16 @@ Group unresolved `core` assertions by reference paper. For each paper:
 
 For each processed term, write:
 
-- `runs/{cell_id}/verdicts.json`
-- `runs/{cell_id}/tool_calls.jsonl`
-- `runs/{cell_id}/report.md`
+- `runs/{term_id}/verdicts.json`
+- `runs/{term_id}/tool_calls.jsonl`
+- `runs/{term_id}/report.md`
 
-### `runs/{cell_id}/verdicts.json`
+### `runs/{term_id}/verdicts.json`
 
 Use this shape:
 
 ```json
 {
-  "cell_id": "CL_4033094",
   "term_id": "CL:4033094",
   "name": "...",
   "targets_processed": [
@@ -360,11 +360,11 @@ Notes:
   `final_verdict` is `fail` or `uncertain`.
 - Term-level pass/fail is driven only by `core` assertions.
 
-### `runs/{cell_id}/tool_calls.jsonl`
+### `runs/{term_id}/tool_calls.jsonl`
 
 One JSON object per line, one line per tool invocation.
 
-### `runs/{cell_id}/report.md`
+### `runs/{term_id}/report.md`
 
 Short human-readable summary:
 
