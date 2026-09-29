@@ -15,6 +15,7 @@ import pytest
 
 from clara_workflow.stage1.extract import (
     _robot_convert_to_ofn,
+    _robot_diff_with_import_fallback,
     _strip_imports,
     extract,
 )
@@ -53,6 +54,65 @@ def test_strip_imports_drops_owl_functional_import_lines():
 def test_strip_imports_leaves_unrelated_lines_untouched():
     text = "def: \"An import-related structure.\" [GOC:test]\n"
     assert _strip_imports(text) == text
+
+
+# --- _robot_diff_with_import_fallback -------------------------------------
+#
+# Hermetic (mocked subprocess) regression tests for the fallback ordering
+# itself. Stripping imports loses label resolution for any entity defined
+# only in an import (e.g. BFO's `part of`, or an UBERON class referenced from
+# cl-edit.owl) -- confirmed by comparing real output on a live CL PR before
+# and after this fix. So stripping must be a last resort, never the default:
+# these tests fail loudly if that ordering regresses back to "always strip".
+
+def test_prefers_full_imports_when_diff_succeeds(tmp_path, monkeypatch):
+    calls: list[list[str]] = []
+
+    def fake_run(cmd, check):
+        calls.append(cmd)
+        Path(cmd[cmd.index("--output") + 1]).write_text("ok")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    left = tmp_path / "left.owl"
+    right = tmp_path / "right.owl"
+    left.write_text("import: http://example.org/foo.owl\nfoo\n")
+    right.write_text("import: http://example.org/foo.owl\nbar\n")
+    out = tmp_path / "diff.md"
+
+    _robot_diff_with_import_fallback(left, right, out, robot="robot")
+
+    assert len(calls) == 1, "must not strip imports when the first attempt succeeds"
+    assert str(left) in calls[0] and str(right) in calls[0]
+    assert not (tmp_path / "left.owl.noimports").exists()
+    assert out.read_text() == "ok"
+
+
+def test_falls_back_to_stripped_copies_only_after_a_failure(tmp_path, monkeypatch):
+    calls: list[list[str]] = []
+
+    def fake_run(cmd, check):
+        calls.append(cmd)
+        if len(calls) == 1:
+            raise subprocess.CalledProcessError(1, cmd)
+        Path(cmd[cmd.index("--output") + 1]).write_text("ok")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    left = tmp_path / "left.owl"
+    right = tmp_path / "right.owl"
+    left.write_text("import: http://example.org/broken.owl\nfoo\n")
+    right.write_text("import: http://example.org/broken.owl\nbar\n")
+    out = tmp_path / "diff.md"
+
+    _robot_diff_with_import_fallback(left, right, out, robot="robot")
+
+    assert len(calls) == 2
+    # First attempt used the original, import-carrying files.
+    assert str(left) in calls[0] and str(right) in calls[0]
+    # Retry used stripped copies, not the originals.
+    assert str(left) not in calls[1] and str(right) not in calls[1]
+    assert out.read_text() == "ok"
 
 
 # --- _robot_convert_to_ofn ----------------------------------------------

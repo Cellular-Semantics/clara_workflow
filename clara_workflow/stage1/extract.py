@@ -50,12 +50,15 @@ _IMPORT_LINE_RE = re.compile(r"^(import:\s|Import\()")
 
 
 def _strip_imports(text: str) -> str:
-    """Drop owl:imports declarations before handing text to ROBOT.
+    """Drop owl:imports declarations from edit-file text.
 
-    Stage 1 only ever needs the edit file's own asserted axioms, never the
-    merged import closure, and resolving imports pulls in large remote
-    ontologies on every review run — or fails outright if a PURL has moved.
-    (Confirmed against a live uberon-edit.obo import that currently 404s.)
+    Used only as a fallback when ROBOT fails to resolve the real import
+    graph (e.g. a moved PURL) — not the default path. Stripping unconditionally
+    would also strip label resolution for entities defined only in an import
+    (e.g. BFO's `part of`, or an UBERON class referenced from cl-edit.owl),
+    degrading axiom text like `part of some mouth mucosa` down to
+    `BFO_0000050 some UBERON_0003729`. That's a real quality loss for the
+    downstream verification agent, so this is a last resort, not a default.
     """
     return "\n".join(
         line for line in text.splitlines() if not _IMPORT_LINE_RE.match(line)
@@ -74,6 +77,26 @@ def _robot_diff(left: Path, right: Path, out: Path, robot: str = "robot") -> Non
         ],
         check=True,
     )
+
+
+def _robot_diff_with_import_fallback(
+    left: Path, right: Path, out: Path, robot: str = "robot"
+) -> None:
+    """Diff with the edit files as-is first (full import graph -> real
+    labels); only fall back to import-stripped copies if that fails (e.g. a
+    moved PURL). Keeps today's label quality for every repo whose imports
+    still resolve, while not hard-failing for one that doesn't.
+    """
+    try:
+        _robot_diff(left, right, out, robot=robot)
+        return
+    except subprocess.CalledProcessError:
+        pass
+    stripped_left = left.with_name(left.name + ".noimports")
+    stripped_right = right.with_name(right.name + ".noimports")
+    stripped_left.write_text(_strip_imports(left.read_text()))
+    stripped_right.write_text(_strip_imports(right.read_text()))
+    _robot_diff(stripped_left, stripped_right, out, robot=robot)
 
 
 # `definition_refs()` scans for the compact `obo:`/`oboInOwl:` curie form (it
@@ -100,6 +123,23 @@ def _robot_convert_to_ofn(input_path: Path, output_path: Path, robot: str = "rob
     subprocess.run(cmd, check=True)
 
 
+def _robot_convert_to_ofn_with_import_fallback(
+    input_path: Path, output_path: Path, robot: str = "robot"
+) -> None:
+    """Same fallback strategy as `_robot_diff_with_import_fallback`: definitions'
+    own dbxrefs never depend on an import, so stripping only kicks in when the
+    full-import conversion fails outright.
+    """
+    try:
+        _robot_convert_to_ofn(input_path, output_path, robot=robot)
+        return
+    except subprocess.CalledProcessError:
+        pass
+    stripped = input_path.with_name(input_path.name + ".noimports")
+    stripped.write_text(_strip_imports(input_path.read_text()))
+    _robot_convert_to_ofn(stripped, output_path, robot=robot)
+
+
 def _change_to_dict(c: Change) -> dict:
     d = dataclasses.asdict(c)
     d.pop("raw", None)  # drop the debug field from serialised output
@@ -121,20 +161,19 @@ def extract(
     """
     with tempfile.TemporaryDirectory() as td:
         tdp = Path(td)
-        left_raw = tdp / "left.raw"
-        right_raw = tdp / "right.raw"
         left = tdp / "left.owl"
         right = tdp / "right.owl"
         right_ofn = tdp / "right.ofn"
         diff_md = tdp / "diff.md"
-        _git_show(repo, left_ref, edit_file, left_raw)
-        _git_show(repo, right_ref, edit_file, right_raw)
-        left.write_text(_strip_imports(left_raw.read_text()))
-        right.write_text(_strip_imports(right_raw.read_text()))
-        _robot_diff(left, right, diff_md, robot=robot)
+        _git_show(repo, left_ref, edit_file, left)
+        _git_show(repo, right_ref, edit_file, right)
+        # Full import graph first (real labels on cross-ontology references);
+        # only degrade to import-stripped copies if that fails outright (e.g.
+        # a moved PURL) -- see _robot_diff_with_import_fallback.
+        _robot_diff_with_import_fallback(left, right, diff_md, robot=robot)
         # Read definition refs off a functional-syntax conversion rather than
         # the right file directly, so this also works for non-OWL edit files.
-        _robot_convert_to_ofn(right, right_ofn, robot=robot)
+        _robot_convert_to_ofn_with_import_fallback(right, right_ofn, robot=robot)
         return (
             parse_diff_markdown(diff_md.read_text()),
             definition_refs(right_ofn.read_text()),
