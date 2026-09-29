@@ -3,6 +3,11 @@
 You are verifying factual claims implied by routed CLARA targets against their
 cited references.
 
+Ontology-agnostic: this runs against any OBO Foundry ontology's edit file, not
+just CL. `CL_4033094`-style ids and "cell type" below are illustrative only —
+substitute the term's own prefix and kind of entity (e.g. an anatomical
+structure in UBERON) throughout.
+
 Work one term at a time, but process **all routed targets for that term**
 together.
 
@@ -107,9 +112,9 @@ For `ntr` targets:
    `definition_changes`).
 2. Decompose its `value` into atomic assertions.
 3. Tag each assertion as:
-   - `core` — the subject is the cell type itself
+   - `core` — the subject is the term itself
    - `background` — the subject is a molecule, gene, process, or external
-     concept rather than the cell type
+     concept rather than the term itself
 4. Also take each `added` change from `relationship_changes` and convert it
    into one atomic `core` assertion.
 
@@ -238,7 +243,7 @@ For every decomposable `textual_changes` entry:
 - One fact per assertion.
 - Split conjunctions ("secretes X, Y, and Z" → three assertions).
 - Split clauses that bundle identity + location + function.
-- Preserve the cell-type subject in every `core` assertion so it stands alone.
+- Preserve the term's subject in every `core` assertion so it stands alone.
 - Strip hedges ("crucial for", "key") but keep the factual core.
 - Do not invent claims the text does not make.
 - Use only the routed textual change's `value` as the prose source of truth.

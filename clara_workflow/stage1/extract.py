@@ -18,6 +18,7 @@ import argparse
 import dataclasses
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -43,6 +44,24 @@ def _git_show(repo: Path, ref: str, path: str, out: Path) -> None:
         )
 
 
+# Matches an OBO `import:` line, or an OWL functional-syntax `Import(<iri>)`
+# line (the two serializations edit files are known to use).
+_IMPORT_LINE_RE = re.compile(r"^(import:\s|Import\()")
+
+
+def _strip_imports(text: str) -> str:
+    """Drop owl:imports declarations before handing text to ROBOT.
+
+    Stage 1 only ever needs the edit file's own asserted axioms, never the
+    merged import closure, and resolving imports pulls in large remote
+    ontologies on every review run — or fails outright if a PURL has moved.
+    (Confirmed against a live uberon-edit.obo import that currently 404s.)
+    """
+    return "\n".join(
+        line for line in text.splitlines() if not _IMPORT_LINE_RE.match(line)
+    ) + "\n"
+
+
 def _robot_diff(left: Path, right: Path, out: Path, robot: str = "robot") -> None:
     subprocess.run(
         [
@@ -55,6 +74,30 @@ def _robot_diff(left: Path, right: Path, out: Path, robot: str = "robot") -> Non
         ],
         check=True,
     )
+
+
+# `definition_refs()` scans for the compact `obo:`/`oboInOwl:` curie form (it
+# has to — that's what real edit files use), so a conversion must declare the
+# same prefixes ROBOT doesn't add by default.
+_OFN_PREFIXES = (
+    "obo: http://purl.obolibrary.org/obo/",
+    "oboInOwl: http://www.geneontology.org/formats/oboInOwl#",
+)
+
+
+def _robot_convert_to_ofn(input_path: Path, output_path: Path, robot: str = "robot") -> None:
+    """Convert `input_path` to OWL functional syntax, in the curie form
+    `definition_refs()` expects, regardless of the input's own format.
+
+    This is what lets `definition_refs()` work against an OBO edit file: it
+    only understands functional-syntax `AnnotationAssertion(...)` lines, so
+    non-OWL edit files (e.g. `uberon-edit.obo`) need converting first.
+    """
+    cmd = [robot, "convert", "-i", str(input_path), "-f", "ofn"]
+    for prefix in _OFN_PREFIXES:
+        cmd += ["--add-prefix", prefix]
+    cmd += ["-o", str(output_path)]
+    subprocess.run(cmd, check=True)
 
 
 def _change_to_dict(c: Change) -> dict:
@@ -78,15 +121,23 @@ def extract(
     """
     with tempfile.TemporaryDirectory() as td:
         tdp = Path(td)
+        left_raw = tdp / "left.raw"
+        right_raw = tdp / "right.raw"
         left = tdp / "left.owl"
         right = tdp / "right.owl"
+        right_ofn = tdp / "right.ofn"
         diff_md = tdp / "diff.md"
-        _git_show(repo, left_ref, edit_file, left)
-        _git_show(repo, right_ref, edit_file, right)
+        _git_show(repo, left_ref, edit_file, left_raw)
+        _git_show(repo, right_ref, edit_file, right_raw)
+        left.write_text(_strip_imports(left_raw.read_text()))
+        right.write_text(_strip_imports(right_raw.read_text()))
         _robot_diff(left, right, diff_md, robot=robot)
+        # Read definition refs off a functional-syntax conversion rather than
+        # the right file directly, so this also works for non-OWL edit files.
+        _robot_convert_to_ofn(right, right_ofn, robot=robot)
         return (
             parse_diff_markdown(diff_md.read_text()),
-            definition_refs(right.read_text()),
+            definition_refs(right_ofn.read_text()),
         )
 
 
