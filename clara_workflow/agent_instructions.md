@@ -35,9 +35,13 @@ Treat this routed payload as the stable consumer contract for PR-triggered
 CLARA review.
 
 Every id downstream of the routing payload is the CURIE form (`term_id`, e.g.
-`CL:4033094`), including output paths (`runs/{term_id}/...`). A colon is a
-valid POSIX filename character, so this needs no further encoding on the
-runner.
+`CL:4033094`). Output paths are the exception: `actions/upload-artifact`
+rejects colons in artifact paths (cross-platform/NTFS compatibility, enforced
+by the upload step, not the runner's own filesystem), so use the underscore
+form there -- replace `:` with `_` (`CL:4033094` -> `CL_4033094`) when
+constructing `runs/{term_id}/...`. The `term_id` field inside the written
+JSON/markdown content itself stays in CURIE form; only the directory and file
+*paths* need the substitution.
 
 The routing payload contains `targets`. Each target has one of these routes:
 
@@ -94,7 +98,9 @@ Relevant target fields:
 - Group all targets by `term_id`.
 - Process each term group independently.
 
-For every processed term, write one output bundle under `runs/{term_id}/`.
+For every processed term, write one output bundle under `runs/{term_id}/`,
+using the underscore form of `term_id` for the path (e.g. `CL:4033094` ->
+`runs/CL_4033094/`) -- see the note above on why.
 
 ## Assertion preparation
 
